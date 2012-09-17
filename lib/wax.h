@@ -12,5 +12,6 @@ void wax_startWithServer();
 void wax_end();
 
 lua_State *wax_currentLuaState();
+void wax_setCurrentLuaState(lua_State* L);
 
 void luaopen_wax(lua_State *L);

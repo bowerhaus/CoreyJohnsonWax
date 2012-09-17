@@ -5,6 +5,9 @@
 //  Created by ProbablyInteractive on 5/27/09.
 //  Copyright 2009 Probably Interactive. All rights reserved.
 //
+//  17 Sept 2012: Some patches by Andy Bower (Bowerhaus LLP) to allow
+//  integration with Gideros Mobile SDK (www.giderosmobile.com)
+//
 
 #import "ProtocolLoader.h"
 
@@ -37,6 +40,21 @@ lua_State *wax_currentLuaState() {
     
     return currentL;
 }
+
+// Patch by AWB: Allow external set of Lua environment for integration
+// into systems which already have a Lua system built in (e.g. Gideros)
+//
+static bool usingExternalLuaState=FALSE;
+void wax_setCurrentLuaState(lua_State* L) {
+    currentL=L;
+    usingExternalLuaState=true;
+}
+
+// Patch by AWB: For the cases when server is not used let's still make
+// sure it compiles okay with the following required definition.
+#ifndef WAX_SCRIPTS_DIR
+#define WAX_SCRIPTS_DIR ""
+#endif
 
 void uncaughtExceptionHandler(NSException *e) {
     NSLog(@"ERROR: Uncaught exception %@", [e description]);
@@ -155,8 +173,12 @@ void wax_startWithServer() {
 
 void wax_end() {
     [wax_gc stop];
-    lua_close(wax_currentLuaState());
-    currentL = 0;
+    
+    // Patch by AWB: Don't close the LUA state if we don't own it
+    if (!usingExternalLuaState) {
+        lua_close(wax_currentLuaState());
+        currentL = 0;       
+    }
 }
 
 static void addGlobals(lua_State *L) {
