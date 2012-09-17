@@ -1,0 +1,4 @@
+#!/bin/bash  
+
+xcodebuild -configuration Release -target "Wax" -sdk iphoneos
+xcodebuild -configuration Release -target "Wax" -sdk iphonesimulator
