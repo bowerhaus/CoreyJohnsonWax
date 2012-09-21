@@ -21,7 +21,6 @@
 #import "wax_stdlib.h"
 
 #import "lauxlib.h"
-#import "lobject.h"
 #import "lualib.h"
 
 static void addGlobals(lua_State *L);
@@ -84,7 +83,8 @@ void wax_setup() {
     lua_State *L = wax_currentLuaState();
 	lua_atpanic(L, &wax_panic);
     
-    luaL_openlibs(L); 
+    if (!usingExternalLuaState)
+        luaL_openlibs(L); 
 
 	luaopen_wax_class(L);
     luaopen_wax_instance(L);
