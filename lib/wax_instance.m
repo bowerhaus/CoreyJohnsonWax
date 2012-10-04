@@ -13,7 +13,6 @@
 #import "wax_helpers.h"
 
 #import "lauxlib.h"
-#import "lobject.h"
 
 static int __index(lua_State *L);
 static int __newindex(lua_State *L);
@@ -67,11 +66,11 @@ wax_instance_userdata *wax_instance_create(lua_State *L, id instance, BOOL isCla
     wax_instance_pushUserdata(L, instance);
    
     if (lua_isnil(L, -1)) {
-        //wax_log(LOG_GC, @"Creating %@ for %@(%p)", isClass ? @"class" : @"instance", [instance class], instance);
+        // wax_log(LOG_GC, @"Creating %@ for %@(%p)", isClass ? @"class" : @"instance", [instance class], instance);
         lua_pop(L, 1); // pop nil stack
     }
     else {
-        //wax_log(LOG_GC, @"Found existing userdata %@ for %@(%p)", isClass ? @"class" : @"instance", [instance class], instance);
+        // wax_log(LOG_GC, @"Found existing userdata %@ for %@(%p)", isClass ? @"class" : @"instance", [instance class], instance);
         return lua_touserdata(L, -1);
     }
     
@@ -83,7 +82,7 @@ wax_instance_userdata *wax_instance_create(lua_State *L, id instance, BOOL isCla
 	instanceUserdata->actAsSuper = NO;
      
     if (!isClass) {
-        //wax_log(LOG_GC, @"Retaining %@ for %@(%p -> %p)", isClass ? @"class" : @"instance", [instance class], instance, instanceUserdata);
+        // wax_log(LOG_GC, @"Retaining %@ for %@(%p -> %p)", isClass ? @"class" : @"instance", [instance class], instance, instanceUserdata);
         [instanceUserdata->instance retain];
     }
     
@@ -420,11 +419,20 @@ static int methodClosure(lua_State *L) {
         autoAlloc = YES;
         instance = [instance alloc];
     }
-    
+
     NSMethodSignature *signature = [instance methodSignatureForSelector:selector];
     if (!signature) {
-        const char *className = [NSStringFromClass([instance class]) UTF8String];
-        luaL_error(L, "'%s' has no method selector '%s'", className, selectorName);
+        // Fix by AWB: Some methods that can be invoked by performSelector: actually return a nil
+        // method signature. This occurs if a method has been set up as forwarding to an
+        // alternate target. Before giving up see if forwarding is a potential solution.
+        //
+        NSObject *fwd=[instance forwardingTargetForSelector:selector];
+        if (fwd && (signature= [fwd methodSignatureForSelector:selector]))
+            instance=fwd;
+        else{
+            const char *className = [NSStringFromClass([instance class]) UTF8String];
+            luaL_error(L, "'%s' has no method selector '%s'", className, selectorName);
+        }
     }
     
     NSInvocation *invocation = nil;
@@ -435,8 +443,7 @@ static int methodClosure(lua_State *L) {
     
     int objcArgumentCount = [signature numberOfArguments] - 2; // skip the hidden self and _cmd argument
     int luaArgumentCount = lua_gettop(L) - 1;
-    
-    
+
     if (objcArgumentCount > luaArgumentCount && !wax_instance_isWaxClass(instance)) { 
         luaL_error(L, "Not Enough arguments given! Method named '%s' requires %d argument(s), you gave %d. (Make sure you used ':' to call the method)", selectorName, objcArgumentCount + 1, lua_gettop(L));
     }
@@ -626,11 +633,11 @@ BEGIN_STACK_MODIFY(L); \
 int result = pcallUserdata(L, self, _cmd, args_copy); \
 va_end(args_copy); \
 va_end(args); \
+_type_ returnValue; \
 if (result == -1) { \
     luaL_error(L, "Error calling '%s' on '%s'\n%s", _cmd, [[self description] UTF8String], lua_tostring(L, -1)); \
 } \
 else if (result == 0) { \
-    _type_ returnValue; \
     bzero(&returnValue, sizeof(_type_)); \
     END_STACK_MODIFY(L, 0) \
     return returnValue; \
@@ -638,7 +645,7 @@ else if (result == 0) { \
 \
 NSMethodSignature *signature = [self methodSignatureForSelector:_cmd]; \
 _type_ *pReturnValue = (_type_ *)wax_copyToObjc(L, [signature methodReturnType], -1, nil); \
-_type_ returnValue = *pReturnValue; \
+returnValue = *pReturnValue; \
 free(pReturnValue); \
 END_STACK_MODIFY(L, 0) \
 return returnValue; \

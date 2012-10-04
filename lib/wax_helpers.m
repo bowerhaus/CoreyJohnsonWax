@@ -588,12 +588,17 @@ BOOL wax_selectorForInstance(wax_instance_userdata *instanceUserdata, SEL* found
         
         BOOL addSelector = NO;
         if (instanceUserdata->isClass && (forceInstanceCheck || wax_isInitMethod(methodName))) {
-            if ([instanceUserdata->instance instanceMethodSignatureForSelector:selector]) addSelector = YES;
+            if ([instanceUserdata->instance instanceMethodSignatureForSelector:selector])addSelector = YES;
         }
         else {
-            if ([instanceUserdata->instance methodSignatureForSelector:selector]) addSelector = YES;
+            // Fix by AWB: Some methods that can be invoked by performSelector: actually return a nil
+            // method signature. This occurs if a method has been set up as forwarding to an
+            // alternate target. Using respondsToSelector: rather than methodSignatureForSelector:
+            // addresses this. NB:
+            //
+            if ([instanceUserdata->instance respondsToSelector:selector]) addSelector = YES;
         }    
-        
+
         if (addSelector) {
             if (!foundSelectors[0]) foundSelectors[0] = selector;
             else foundSelectors[1] = selector;
