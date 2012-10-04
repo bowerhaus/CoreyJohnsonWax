@@ -6,12 +6,15 @@
 
 #define WAX_VERSION 0.93
 
-void wax_setup();
+// Prototypes to keep compiler happy
+void wax_setup(void);
 void wax_start(char *initScript, lua_CFunction extensionFunctions, ...);
-void wax_startWithServer();
-void wax_end();
+void wax_startWithServer(void);
+void wax_end(void);
+void uncaughtExceptionHandler(NSException*);
+int wax_panic(lua_State*);
 
-lua_State *wax_currentLuaState();
+lua_State *wax_currentLuaState(void);
 void wax_setCurrentLuaState(lua_State* L);
 
 void luaopen_wax(lua_State *L);

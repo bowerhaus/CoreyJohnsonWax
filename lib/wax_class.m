@@ -146,6 +146,10 @@ static int name(lua_State *L) {
     return 1;
 }
 
+@interface NSObject ()
+-(id) wax_originalAllocWithZone: (NSZone*) zone;
+@end
+
 static id allocWithZone(id self, SEL _cmd, NSZone *zone) {
     lua_State *L = wax_currentLuaState(); 
     BEGIN_STACK_MODIFY(L);
