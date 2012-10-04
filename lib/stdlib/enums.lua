@@ -351,6 +351,27 @@ GKSessionModePeer = 2
 GKSendDataReliable = 0 -- a.s.a.p. but requires fragmentation and reassembly for large messages, may stall if network congestion occurs
 GKSendDataUnreliable = 1 -- best effort and immediate, but no guarantees of delivery or order; will not stall.
 
+-- GKTurnBasedParticipantStatus
+GKTurnBasedParticipantStatusUnknown = 0
+GKTurnBasedParticipantStatusInvited = 1
+GKTurnBasedParticipantStatusDeclined = 2
+GKTurnBasedParticipantStatusMatching = 3
+GKTurnBasedParticipantStatusActive = 4
+GKTurnBasedParticipantStatusDone = 5
+
+-- GKTurnBasedMatchOutcome
+GKTurnBasedMatchOutcomeNone = 0
+GKTurnBasedMatchOutcomeQuit = 1
+GKTurnBasedMatchOutcomeWon = 2
+GKTurnBasedMatchOutcomeLost = 3
+GKTurnBasedMatchOutcomeTied = 4
+GKTurnBasedMatchOutcomeTimeExpired = 5
+GKTurnBasedMatchOutcomeFirst = 6
+GKTurnBasedMatchOutcomeSecond = 7
+GKTurnBasedMatchOutcomeThird = 8
+GKTurnBasedMatchOutcomeFourth = 9
+GKTurnBasedMatchOutcomeCustomRange = 0x00FF0000
+
 -- UIImagePickerControllerSourceType
 UIImagePickerControllerSourceTypePhotoLibrary = 0
 UIImagePickerControllerSourceTypeCamera = 1
@@ -394,3 +415,7 @@ UIControlContentVerticalAlignmentFill = 3
 UIEventTypeTouches = 0
 UIEventTypeMotion = 1
 UIEventTypeRemoteControl = 2
+
+-- EAGL
+kEAGLRenderingAPIOpenGLES1 = 1
+kEAGLRenderingAPIOpenGLES2 = 2
